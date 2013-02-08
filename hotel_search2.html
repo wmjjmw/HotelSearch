@@ -1,0 +1,151 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Hotel Search</title>
+<style type="text/css">
+#pattern-style-b
+{
+	font-family:Arial, Helvetica, sans-serif;
+	margin: 45px;
+	border-collapse: collapse;
+	background: url('patternb.png');
+}
+#pattern-style-b thead tr
+{
+	line-height:40px;
+	background: url('patternb-head.png');
+}
+#pattern-style-b th
+{
+	font-size: 18px;
+	font-weight: normal;
+	padding: 8px;
+	border-bottom: 1px solid #fff;
+	color: #039;
+}
+#pattern-style-b td
+{
+	padding: 8px; 
+	border-bottom: 1px solid #fff;
+	color: #669;
+	border-top: 1px solid transparent;
+}
+#pattern-style-b tbody tr:hover td
+{
+	color: #339;
+	background: #cdcdee;
+}
+</style>
+<script language="javascript">
+	var req;
+	function submitUrl(){
+		var form = document.forms['searchForm'];
+		var s= document.getElementsByName("cityName");
+		var url = "http://cs-server.usc.edu:29568/hw8/hello";
+		
+		if(s.item(0).value==''){
+			alert('Please enter a city name');			
+		}
+		else{
+			if (window.XMLHttpRequest) { 
+				req = new XMLHttpRequest();				
+			}
+			else { 
+				if (window.ActiveXObject) {
+					try { 
+						req = new ActiveXObject("Microsoft.XMLHTTP");
+					} catch (e) { } 
+				}
+			}
+
+			if (req) {
+				//document.getElementById("popups").innerHTML += "!!!";
+				url += "?cityName=";
+				var hotelNames = form.cityName.value; 
+				hotelNames = hotelNames.replace(/ /g, "+"); 
+				url += hotelNames;
+				url += "&hotelChain=";
+				url += form.hotelChain.value;
+				req.open("GET", url, true); 
+				req.onreadystatechange = callback;
+				req.setRequestHeader("Connection", "Close");
+				req.setRequestHeader("Method", "GET" + url + "HTTP/1.1");
+				req.send(null);
+			} 
+			else {
+				alert("Sorry, but I couldn't create an XMLHttpRequest"); 
+			}
+		}
+	}
+	
+	function callback(){
+		if(req.readyState == 4){
+			if(req.status == 200){
+				//document.getElementById("popups").innerHTML = req.responseText;
+				var jsonData = req.responseText;
+				//document.getElementById("popups").innerHTML = jsonData;
+				var myJSONObject = eval('(' + jsonData + ')');
+				if (myJSONObject.hotels.hotel.length == 0){
+					document.getElementById("popups").innerHTML = "<h1 align=\"center\">No hotels found!</h1>";
+				}
+				else {
+					 drawTable(myJSONObject);
+				}
+			}
+		}
+	}
+	
+	function drawTable(myJSONObject){
+		var popupHTML = "<table id=\"pattern-style-b\">\n";
+		popupHTML += "<thead><tr><th scope=\"col\" width=\"150\" align=\"center\">Image</th><th scope=\"col\" width=\"160\" align=\"center\">Name</th><th scope=\"col\" width=\"130\" align=\"center\">Location</th><th scope=\"col\" width=\"148\" align=\"center\">Rating out of 5</th><th scope=\"col\" width=\"150\" align=\"center\">Reviews</th><th scope=\"col\" width=\"180\" align=\"center\">Post to Facebook</th></tr></thead>\n";
+		popupHTML += "<tbody>\n";
+		for (var i = 0; i < myJSONObject.hotels.hotel.length; i++){
+			popupHTML += "<tr>\n";
+			popupHTML += "<td align=\"center\"><img src=\"" + myJSONObject.hotels.hotel[i].image_url.replace("!", ":") +"\" style=\"height: 200px; width: 150px;\"></td>\n";
+			popupHTML += "<td align=\"center\">" + myJSONObject.hotels.hotel[i].name.replace("*", ",") + "</td>\n";
+			popupHTML += "<td align=\"center\">" + myJSONObject.hotels.hotel[i].location.replace("*", ",") + "</td>\n";
+			popupHTML += "<td align=\"center\">" + myJSONObject.hotels.hotel[i].no_of_stars + "</td>\n";
+			popupHTML += "<td align=\"center\"><a href=http://www.tripadvisor.com" + myJSONObject.hotels.hotel[i].review_url.replace("!", ":") + ">" + myJSONObject.hotels.hotel[i].no_of_reviews +"</a></td>\n";
+			popupHTML += "<td align=\"center\"><a href =\"#\" onclick=\"window.open('https://www.facebook.com/dialog/feed?app_id=400864553259603&display=popup&redirect_uri=http://cs-server.usc.edu:29568/hw8/hotel_search2.html&picture=";
+			popupHTML += myJSONObject.hotels.hotel[i].image_url.replace("!", ":") + "&caption=Check%20this%20hotel&name=";
+			popupHTML += myJSONObject.hotels.hotel[i].name.replace("*", ",") + "&description=The%20Hotel%20is%20located%20at%20";
+			popupHTML += myJSONObject.hotels.hotel[i].location.replace("*", ",") + "%20and%20has%20a%20rating%20of%20";
+			popupHTML += myJSONObject.hotels.hotel[i].no_of_stars + ".&properties=%7B%27Find+the+Hotel+Reviews%27%3A%7Btext%3A%27here%27%2Chref%3A%27";
+			popupHTML += "http://www.tripadvisor.com" + escape(myJSONObject.hotels.hotel[i].review_url.replace("!", ":")) +"%27%7D%7D', 'myWin', 'toolbar=no, directories=no, location=no, status=yes, menubar=no, resizable=no, scrollbars=yes, width=500, height=250, left=";
+			popupHTML += (screen.width-500)/2+", top="+(screen.height-250)/2+"'); return false\"><img src=\"facebook.jpg\" width=\"120\" height=\"40\"></a></td>\n"
+			popupHTML += "</tr>\n";
+				
+		}
+		popupHTML += "</tbody>\n";
+		popupHTML += "</table>";
+		document.getElementById("popups").innerHTML = popupHTML;
+	}
+</script>
+</head>
+
+<body style="font-family:Arial, Helvetica, sans-serif">
+<FORM name="searchForm" METHOD=post>
+<H1 align="center"> Hotel Search </H1>
+<div align="center" style="font-size:18px">
+<FIELDSET style="border:double; width:350px; height:110px">
+<TABLE align="left" style="line-height:40px"> 
+<TR><TD width="105"> <LABEL FOR=cityName ACCESSKEY=C>City:</LABEL></TD>
+<td><INPUT TYPE=text NAME=cityName ID=cityName style="font-family:Arial, Helvetica, sans-serif; font-size:18px"> </td></TR>
+<tr><td><LABEL FOR=hotelChain ACCESSKEY=H>Hotel Chain:</LABEL></td>
+<td><SELECT NAME=hotelChain style="font-family:Arial, Helvetica, sans-serif; font-size:18px; width:210px"> 
+<OPTION SELECTED> Hilton </OPTION><OPTION> Marriott </OPTION>
+<OPTION> Accor </OPTION>
+<OPTION> Hyatt </OPTION>
+<OPTION> InterContinental </OPTION>
+</SELECT></td></tr>
+<tr><td></td><th><INPUT type="button" VALUE="Search" style="font-family:Arial, Helvetica, sans-serif; font-size:18px" onclick="submitUrl()"></th></tr>
+</TABLE> 
+</FIELDSET>
+<br />
+</div></br>
+<div id="popups" align="center">
+</div>
+</FORM>
+<noscript></body>
+</html>
