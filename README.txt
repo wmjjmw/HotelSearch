@@ -1,3 +1,5 @@
+Link: http://cs-server.usc.edu:29568/hw8/hotel_search2.html
+
 This project provided an interface to perform search from tripadvisor.com and post details to Facebook
 It used a combination of HTML, CSS, DOM, XMLHttpRequest, Java Servlets, AJAX, JSON& XMLtechnologies.
 
